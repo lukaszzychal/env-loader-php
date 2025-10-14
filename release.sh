@@ -67,16 +67,8 @@ if git tag -l | grep -q "^$TAG$"; then
     exit 1
 fi
 
-# Update composer.json version
-print_status "Updating composer.json version to $VERSION"
-if command -v jq >/dev/null 2>&1; then
-    # Use jq if available
-    jq --arg version "$VERSION" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
-else
-    # Fallback to sed
-    sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" composer.json
-    rm -f composer.json.bak
-fi
+# Note: Version is managed by Git tags for Packagist
+print_status "Version $VERSION will be managed by Git tag (Packagist standard)"
 
 # Update CHANGELOG.md
 print_status "Updating CHANGELOG.md"
@@ -105,8 +97,8 @@ print_status "Running code quality checks..."
 composer quality
 
 # Commit changes
-print_status "Committing version changes..."
-git add composer.json CHANGELOG.md
+print_status "Committing release changes..."
+git add CHANGELOG.md
 git commit -m "Release version $VERSION"
 
 # Create tag

@@ -1,7 +1,6 @@
 {
     "name": "lukaszzychal/env-loader",
     "description": "A simple and lightweight .env file loader utility for PHP",
-    "version": "1.0.0",
     "type": "library",
     "keywords": ["env", "environment", "dotenv", "configuration", "php"],
     "license": "MIT",
