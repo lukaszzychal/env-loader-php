@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   release:
     name: Create Release
@@ -46,6 +50,10 @@ jobs:
     - name: Run PHP CodeSniffer
       run: composer cs-check
     
+    - name: Setup GitHub CLI
+      run: |
+        gh --version
+    
     - name: Generate changelog
       id: changelog
       run: |
@@ -78,25 +86,13 @@ jobs:
         echo "**Full Changelog**: https://github.com/$GITHUB_REPOSITORY/compare/$PREV_TAG...v$VERSION" >> release_notes.md
     
     - name: Create Release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.changelog.outputs.version }}
-        body_path: release_notes.md
-        draft: false
-        prerelease: false
-    
-    - name: Upload Release Assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./composer.json
-        asset_name: composer.json
-        asset_content_type: application/json
+      run: |
+        gh release create ${{ github.ref_name }} \
+          --title "Release ${{ steps.changelog.outputs.version }}" \
+          --notes-file release_notes.md \
+          --verify-tag
     
     - name: Notify Packagist
       if: success()
