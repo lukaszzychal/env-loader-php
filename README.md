@@ -202,6 +202,27 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Release Management
+
+This project uses automated releases via GitHub Actions. When you push a Git tag, the following happens automatically:
+
+1. Tests and quality checks run
+2. GitHub Release is created with changelog
+3. Packagist is notified (if webhook configured)
+
+### Creating a Release
+
+Use the included release script:
+```bash
+./release.sh 1.0.0
+```
+
+Or manually:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
 ## Changelog
 
 ### 1.0.0
@@ -210,6 +231,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Support for quoted values
 - Comment and empty line handling
 - Non-overwriting behavior for existing environment variables
+- Automated release workflow with GitHub Actions
 
 ## Author
 

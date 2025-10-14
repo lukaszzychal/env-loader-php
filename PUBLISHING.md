@@ -42,9 +42,52 @@ git push origin main
 5. Go to your GitHub repository settings → Webhooks
 6. Add the webhook URL with content type "application/json"
 
+**Webhook URL Format:**
+```
+https://packagist.org/api/github?username=YOUR_USERNAME&apiToken=YOUR_API_TOKEN
+```
+
+**Alternative: Manual Packagist Updates**
+If you prefer manual updates, you can trigger Packagist updates by visiting:
+```
+https://packagist.org/packages/lukaszzychal/env-loader
+```
+And clicking the "Update" button after each release.
+
 ## Version Management
 
-### Creating a Release
+### Automated Releases
+
+This project includes automated release workflows that trigger when you push Git tags:
+
+1. **Update version in `composer.json`**
+2. **Update `CHANGELOG.md`**
+3. **Create and push a Git tag:**
+
+```bash
+# Create the tag
+git tag v1.0.0
+
+# Push the tag (this triggers the release workflow)
+git push origin v1.0.0
+```
+
+### What Happens Automatically
+
+When you push a tag, the following happens automatically:
+
+1. **Tests run** to ensure code quality
+2. **Static analysis** runs (PHPStan Level 8)
+3. **Code style checks** run (PSR-12)
+4. **GitHub Release** is created with:
+   - Automatic changelog generation
+   - Installation instructions
+   - Asset uploads
+5. **Packagist notification** (if webhook is configured)
+
+### Manual Release Process
+
+If you prefer manual releases:
 
 1. Update version in `composer.json`
 2. Update `CHANGELOG.md`

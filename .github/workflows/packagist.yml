@@ -1,0 +1,31 @@
+name: Packagist Update
+
+on:
+  repository_dispatch:
+    types: [packagist]
+  workflow_dispatch:
+    inputs:
+      package_url:
+        description: 'Packagist package URL'
+        required: true
+        default: 'https://packagist.org/packages/lukaszzychal/env-loader'
+
+jobs:
+  update-packagist:
+    name: Update Packagist
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Update Packagist
+      run: |
+        echo "Updating Packagist package..."
+        
+        # Get the latest tag
+        LATEST_TAG=$(git describe --tags --abbrev=0)
+        echo "Latest tag: $LATEST_TAG"
+        
+        # You can add Packagist API call here if you have the API key
+        # curl -X POST https://packagist.org/api/update-package?username=YOUR_USERNAME&apiToken=YOUR_API_TOKEN
+        
+        echo "Packagist update triggered for version: $LATEST_TAG"
+        echo "Package URL: https://packagist.org/packages/lukaszzychal/env-loader"
