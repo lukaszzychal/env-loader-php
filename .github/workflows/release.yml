@@ -82,23 +82,15 @@ jobs:
         echo "**Full Changelog**: https://github.com/$GITHUB_REPOSITORY/compare/$PREV_TAG...v$VERSION" >> release_notes.md
     
     - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release ${{ steps.changelog.outputs.version }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        generate_release_notes: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/v}
-        
-        # Create release using GitHub API
-        curl -X POST \
-          -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
-          -d "{
-            \"tag_name\": \"$GITHUB_REF_NAME\",
-            \"name\": \"Release $VERSION\",
-            \"body\": \"$(cat release_notes.md | sed 's/"/\\"/g' | tr '\n' '\\n')\",
-            \"draft\": false,
-            \"prerelease\": false
-          }"
     
     - name: Notify Packagist
       if: success()
