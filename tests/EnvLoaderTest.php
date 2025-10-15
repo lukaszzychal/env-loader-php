@@ -27,7 +27,7 @@ class EnvLoaderTest extends TestCase
         if (file_exists($this->testEnvFile)) {
             unlink($this->testEnvFile);
         }
-        
+
         // Clean up any local override files that might have been created
         $localFiles = [
             sys_get_temp_dir() . '/test.env.local',
@@ -35,16 +35,16 @@ class EnvLoaderTest extends TestCase
             sys_get_temp_dir() . '/test.env.prod.local',
             sys_get_temp_dir() . '/test.env.staging.local',
         ];
-        
+
         foreach ($localFiles as $file) {
             if (file_exists($file)) {
                 unlink($file);
             }
         }
-        
+
         // Restore original environment
         $_ENV = $this->originalEnv;
-        
+
         // Clean up any test environment variables
         putenv('TEST_VAR');
         putenv('TEST_VAR_2');
@@ -146,7 +146,7 @@ class EnvLoaderTest extends TestCase
         file_put_contents($this->testEnvFile, $envContent);
 
         EnvLoader::load($this->testEnvFile, null, false);
-        
+
         // Should not overwrite existing variable
         $this->assertEquals('existing_value', EnvLoader::get('TEST_VAR'));
         // But should load new variables
@@ -250,11 +250,11 @@ class EnvLoaderTest extends TestCase
         file_put_contents($this->testEnvFile, $envContent);
 
         $result = EnvLoader::loadAndReturn($this->testEnvFile);
-        
+
         $expected = [
             'TEST_VAR' => 'test_value'
         ];
-        
+
         $this->assertEquals($expected, $result);
     }
 
@@ -265,7 +265,7 @@ class EnvLoaderTest extends TestCase
 
         // Base .env file
         file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
-        
+
         // Environment-specific .env.dev file
         file_put_contents($devEnvFile, "DEV_VAR=dev_value\nSHARED_VAR=dev_shared\n");
 
@@ -288,7 +288,7 @@ class EnvLoaderTest extends TestCase
 
         // Base .env file
         file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
-        
+
         // Local override .env.local file
         file_put_contents($localEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
 
@@ -312,10 +312,10 @@ class EnvLoaderTest extends TestCase
 
         // Base .env file
         file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
-        
+
         // Environment-specific .env.dev file
         file_put_contents($devEnvFile, "DEV_VAR=dev_value\nSHARED_VAR=dev_shared\n");
-        
+
         // Local environment override .env.dev.local file
         file_put_contents($devLocalEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
 
@@ -340,7 +340,7 @@ class EnvLoaderTest extends TestCase
 
         // Base .env file
         file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
-        
+
         // Local override .env.local file
         file_put_contents($localEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
 
@@ -363,7 +363,7 @@ class EnvLoaderTest extends TestCase
 
         // Base .env file
         file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
-        
+
         // Environment-specific .env.dev file
         file_put_contents($devEnvFile, "DEV_VAR=dev_value\nSHARED_VAR=dev_shared\n");
 
@@ -374,7 +374,7 @@ class EnvLoaderTest extends TestCase
             'SHARED_VAR' => 'dev_shared',
             'DEV_VAR' => 'dev_value'
         ];
-        
+
         $this->assertEquals($expected, $result);
 
         // Clean up
@@ -389,7 +389,7 @@ class EnvLoaderTest extends TestCase
 
         // Base .env file
         file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
-        
+
         // Local override .env.local file
         file_put_contents($localEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
 
@@ -400,7 +400,7 @@ class EnvLoaderTest extends TestCase
             'SHARED_VAR' => 'local_shared',
             'LOCAL_VAR' => 'local_value'
         ];
-        
+
         $this->assertEquals($expected, $result);
 
         // Clean up

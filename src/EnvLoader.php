@@ -44,8 +44,11 @@ class EnvLoader
      * @param bool $loadLocalOverrides Whether to load .local override files
      * @return array Array of file paths in load order
      */
-    private static function getFilesToLoad(string $filePath, ?string $environment = null, bool $loadLocalOverrides = true): array
-    {
+    private static function getFilesToLoad(
+        string $filePath,
+        ?string $environment = null,
+        bool $loadLocalOverrides = true
+    ): array {
         $files = [];
         $dir = dirname($filePath);
         $baseName = basename($filePath);
@@ -169,8 +172,11 @@ class EnvLoader
      * @param bool $loadLocalOverrides Whether to load .local override files
      * @return array Array of loaded environment variables
      */
-    public static function loadAndReturn(string $filePath, ?string $environment = null, bool $loadLocalOverrides = true): array
-    {
+    public static function loadAndReturn(
+        string $filePath,
+        ?string $environment = null,
+        bool $loadLocalOverrides = true
+    ): array {
         $loaded = [];
         $filesToLoad = self::getFilesToLoad($filePath, $environment, $loadLocalOverrides);
 
@@ -193,7 +199,7 @@ class EnvLoader
     private static function loadFromFileAndReturn(string $filePath): array
     {
         $loaded = [];
-        
+
         if (!file_exists($filePath)) {
             return $loaded;
         }
