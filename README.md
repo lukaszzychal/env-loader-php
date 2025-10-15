@@ -18,6 +18,8 @@ A simple and lightweight .env file loader utility for PHP. This package provides
 - ✅ Supports quoted values (single and double quotes)
 - ✅ Skips comments and empty lines
 - ✅ Does not overwrite existing environment variables
+- ✅ Environment-specific files (.env.dev, .env.prod, etc.)
+- ✅ Local override files (.env.local, .env.dev.local, etc.)
 - ✅ PHP 8.1+ support
 - ✅ Full test coverage
 - ✅ Static analysis compliant
@@ -55,6 +57,37 @@ if ($success) {
 }
 ```
 
+### Environment-Specific Files
+
+```php
+<?php
+
+use LukaszZychal\EnvLoader\EnvLoader;
+
+// Load with environment-specific files
+EnvLoader::load('.env', 'dev'); // Loads .env and .env.dev
+
+// File loading order (later files override earlier ones):
+// 1. .env
+// 2. .env.dev
+// 3. .env.local
+// 4. .env.dev.local
+```
+
+### Local Override Files
+
+```php
+<?php
+
+use LukaszZychal\EnvLoader\EnvLoader;
+
+// Load with local overrides (default behavior)
+EnvLoader::load('.env', 'dev', true);
+
+// Disable local overrides
+EnvLoader::load('.env', 'dev', false);
+```
+
 ### Load and Return Variables
 
 ```php
@@ -72,7 +105,22 @@ foreach ($variables as $key => $value) {
 
 ## .env File Format
 
-The package supports standard `.env` file format:
+The package supports standard `.env` file format with environment-specific and local override files:
+
+### File Structure Example
+
+```
+project/
+├── .env                 # Base configuration
+├── .env.dev            # Development environment
+├── .env.prod           # Production environment
+├── .env.staging        # Staging environment
+├── .env.local          # Local overrides (not in git)
+├── .env.dev.local      # Local dev overrides (not in git)
+└── .env.prod.local     # Local prod overrides (not in git)
+```
+
+### Base .env File
 
 ```env
 # Database configuration
@@ -87,11 +135,48 @@ API_KEY="your-api-key-here"
 API_URL='https://api.example.com'
 
 # Feature flags
-DEBUG=true
-CACHE_ENABLED=false
+DEBUG=false
+CACHE_ENABLED=true
 
 # Comments are supported
 # This is a comment
+FEATURE_NEW_UI=false
+```
+
+### Environment-Specific Files
+
+**.env.dev** (Development):
+```env
+# Override for development
+DEBUG=true
+CACHE_ENABLED=false
+DB_NAME=myapp_dev
+API_URL='https://dev-api.example.com'
+```
+
+**.env.prod** (Production):
+```env
+# Production overrides
+DEBUG=false
+CACHE_ENABLED=true
+DB_HOST=prod-db.example.com
+API_URL='https://api.example.com'
+```
+
+### Local Override Files
+
+**.env.local** (Local developer overrides):
+```env
+# Personal local settings (not committed to git)
+DB_PASSWORD=my_local_password
+API_KEY=my_local_api_key
+DEBUG=true
+```
+
+**.env.dev.local** (Local dev overrides):
+```env
+# Personal dev settings
+DB_PASSWORD=dev_password
 FEATURE_NEW_UI=true
 ```
 
@@ -104,15 +189,23 @@ FEATURE_NEW_UI=true
 
 ## API Reference
 
-### `EnvLoader::load(string $filePath): bool`
+### `EnvLoader::load(string $filePath, ?string $environment = null, bool $loadLocalOverrides = true): bool`
 
-Loads environment variables from a `.env` file.
+Loads environment variables from `.env` files with environment-specific and local override support.
 
 **Parameters:**
-- `$filePath` (string): Path to the .env file
+- `$filePath` (string): Path to the base .env file
+- `$environment` (string|null): Environment name (e.g., 'dev', 'prod', 'staging')
+- `$loadLocalOverrides` (bool): Whether to load .local override files
 
 **Returns:**
-- `bool`: `true` if file was loaded successfully, `false` otherwise
+- `bool`: `true` if any file was loaded successfully, `false` otherwise
+
+**File Loading Order:**
+1. Base file (e.g., `.env`)
+2. Environment-specific file (e.g., `.env.dev`)
+3. Local override file (e.g., `.env.local`)
+4. Environment-specific local override (e.g., `.env.dev.local`)
 
 ### `EnvLoader::get(string $key, mixed $default = null): mixed`
 
@@ -135,12 +228,14 @@ Checks if an environment variable exists.
 **Returns:**
 - `bool`: `true` if variable exists, `false` otherwise
 
-### `EnvLoader::loadAndReturn(string $filePath): array`
+### `EnvLoader::loadAndReturn(string $filePath, ?string $environment = null, bool $loadLocalOverrides = true): array`
 
-Loads environment variables from a `.env` file and returns them as an array without setting them globally.
+Loads environment variables from `.env` files and returns them as an array with environment-specific and local override support.
 
 **Parameters:**
-- `$filePath` (string): Path to the .env file
+- `$filePath` (string): Path to the base .env file
+- `$environment` (string|null): Environment name (e.g., 'dev', 'prod', 'staging')
+- `$loadLocalOverrides` (bool): Whether to load .local override files
 
 **Returns:**
 - `array`: Array of loaded environment variables

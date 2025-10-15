@@ -27,10 +27,24 @@ class EnvLoaderTest extends TestCase
         if (file_exists($this->testEnvFile)) {
             unlink($this->testEnvFile);
         }
-
+        
+        // Clean up any local override files that might have been created
+        $localFiles = [
+            sys_get_temp_dir() . '/test.env.local',
+            sys_get_temp_dir() . '/test.env.dev.local',
+            sys_get_temp_dir() . '/test.env.prod.local',
+            sys_get_temp_dir() . '/test.env.staging.local',
+        ];
+        
+        foreach ($localFiles as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
+        }
+        
         // Restore original environment
         $_ENV = $this->originalEnv;
-
+        
         // Clean up any test environment variables
         putenv('TEST_VAR');
         putenv('TEST_VAR_2');
@@ -39,6 +53,11 @@ class EnvLoaderTest extends TestCase
         putenv('SINGLE_QUOTED_VAR');
         putenv('COMMENTED_VAR');
         putenv('EMPTY_VALUE');
+        putenv('BASE_VAR');
+        putenv('DEV_VAR');
+        putenv('LOCAL_VAR');
+        putenv('SHARED_VAR');
+        putenv('PRIORITY_VAR');
     }
 
     public function testLoadWithNonExistentFile(): void
@@ -126,8 +145,8 @@ class EnvLoaderTest extends TestCase
         $envContent = "TEST_VAR=new_value\nTEST_VAR_2=another_value\n";
         file_put_contents($this->testEnvFile, $envContent);
 
-        EnvLoader::load($this->testEnvFile);
-
+        EnvLoader::load($this->testEnvFile, null, false);
+        
         // Should not overwrite existing variable
         $this->assertEquals('existing_value', EnvLoader::get('TEST_VAR'));
         // But should load new variables
@@ -231,11 +250,205 @@ class EnvLoaderTest extends TestCase
         file_put_contents($this->testEnvFile, $envContent);
 
         $result = EnvLoader::loadAndReturn($this->testEnvFile);
-
+        
         $expected = [
             'TEST_VAR' => 'test_value'
         ];
-
+        
         $this->assertEquals($expected, $result);
+    }
+
+    public function testLoadWithEnvironmentSpecificFile(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $devEnvFile = sys_get_temp_dir() . '/test.env.dev';
+
+        // Base .env file
+        file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
+        
+        // Environment-specific .env.dev file
+        file_put_contents($devEnvFile, "DEV_VAR=dev_value\nSHARED_VAR=dev_shared\n");
+
+        EnvLoader::load($baseEnvFile, 'dev');
+
+        // Should load from both files, with dev file overriding shared values
+        $this->assertEquals('base_value', EnvLoader::get('BASE_VAR'));
+        $this->assertEquals('dev_value', EnvLoader::get('DEV_VAR'));
+        $this->assertEquals('dev_shared', EnvLoader::get('SHARED_VAR'));
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($devEnvFile);
+    }
+
+    public function testLoadWithLocalOverrideFile(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $localEnvFile = sys_get_temp_dir() . '/test.env.local';
+
+        // Base .env file
+        file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
+        
+        // Local override .env.local file
+        file_put_contents($localEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
+
+        EnvLoader::load($baseEnvFile, null, true);
+
+        // Should load from both files, with local file overriding shared values
+        $this->assertEquals('base_value', EnvLoader::get('BASE_VAR'));
+        $this->assertEquals('local_value', EnvLoader::get('LOCAL_VAR'));
+        $this->assertEquals('local_shared', EnvLoader::get('SHARED_VAR'));
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($localEnvFile);
+    }
+
+    public function testLoadWithEnvironmentAndLocalFiles(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $devEnvFile = sys_get_temp_dir() . '/test.env.dev';
+        $devLocalEnvFile = sys_get_temp_dir() . '/test.env.dev.local';
+
+        // Base .env file
+        file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
+        
+        // Environment-specific .env.dev file
+        file_put_contents($devEnvFile, "DEV_VAR=dev_value\nSHARED_VAR=dev_shared\n");
+        
+        // Local environment override .env.dev.local file
+        file_put_contents($devLocalEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
+
+        EnvLoader::load($baseEnvFile, 'dev', true);
+
+        // Should load from all files, with local dev file having highest priority
+        $this->assertEquals('base_value', EnvLoader::get('BASE_VAR'));
+        $this->assertEquals('dev_value', EnvLoader::get('DEV_VAR'));
+        $this->assertEquals('local_value', EnvLoader::get('LOCAL_VAR'));
+        $this->assertEquals('local_shared', EnvLoader::get('SHARED_VAR'));
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($devEnvFile);
+        unlink($devLocalEnvFile);
+    }
+
+    public function testLoadWithoutLocalOverrides(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $localEnvFile = sys_get_temp_dir() . '/test.env.local';
+
+        // Base .env file
+        file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
+        
+        // Local override .env.local file
+        file_put_contents($localEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
+
+        EnvLoader::load($baseEnvFile, null, false);
+
+        // Should only load from base file, ignoring local overrides
+        $this->assertEquals('base_value', EnvLoader::get('BASE_VAR'));
+        $this->assertEquals('base_shared', EnvLoader::get('SHARED_VAR'));
+        $this->assertFalse(EnvLoader::has('LOCAL_VAR'));
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($localEnvFile);
+    }
+
+    public function testLoadAndReturnWithEnvironmentSpecificFile(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $devEnvFile = sys_get_temp_dir() . '/test.env.dev';
+
+        // Base .env file
+        file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
+        
+        // Environment-specific .env.dev file
+        file_put_contents($devEnvFile, "DEV_VAR=dev_value\nSHARED_VAR=dev_shared\n");
+
+        $result = EnvLoader::loadAndReturn($baseEnvFile, 'dev');
+
+        $expected = [
+            'BASE_VAR' => 'base_value',
+            'SHARED_VAR' => 'dev_shared',
+            'DEV_VAR' => 'dev_value'
+        ];
+        
+        $this->assertEquals($expected, $result);
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($devEnvFile);
+    }
+
+    public function testLoadAndReturnWithLocalOverrideFile(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $localEnvFile = sys_get_temp_dir() . '/test.env.local';
+
+        // Base .env file
+        file_put_contents($baseEnvFile, "BASE_VAR=base_value\nSHARED_VAR=base_shared\n");
+        
+        // Local override .env.local file
+        file_put_contents($localEnvFile, "LOCAL_VAR=local_value\nSHARED_VAR=local_shared\n");
+
+        $result = EnvLoader::loadAndReturn($baseEnvFile, null, true);
+
+        $expected = [
+            'BASE_VAR' => 'base_value',
+            'SHARED_VAR' => 'local_shared',
+            'LOCAL_VAR' => 'local_value'
+        ];
+        
+        $this->assertEquals($expected, $result);
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($localEnvFile);
+    }
+
+    public function testLoadWithNonExistentEnvironmentFile(): void
+    {
+        $envContent = "TEST_VAR=test_value\n";
+        file_put_contents($this->testEnvFile, $envContent);
+
+        $result = EnvLoader::load($this->testEnvFile, 'nonexistent');
+
+        $this->assertTrue($result);
+        $this->assertEquals('test_value', EnvLoader::get('TEST_VAR'));
+    }
+
+    public function testLoadWithNonExistentLocalFile(): void
+    {
+        $envContent = "TEST_VAR=test_value\n";
+        file_put_contents($this->testEnvFile, $envContent);
+
+        $result = EnvLoader::load($this->testEnvFile, null, true);
+
+        $this->assertTrue($result);
+        $this->assertEquals('test_value', EnvLoader::get('TEST_VAR'));
+    }
+
+    public function testFileLoadingOrder(): void
+    {
+        $baseEnvFile = sys_get_temp_dir() . '/test.env';
+        $devEnvFile = sys_get_temp_dir() . '/test.env.dev';
+        $devLocalEnvFile = sys_get_temp_dir() . '/test.env.dev.local';
+
+        // All files have the same variable with different values
+        file_put_contents($baseEnvFile, "PRIORITY_VAR=base\n");
+        file_put_contents($devEnvFile, "PRIORITY_VAR=dev\n");
+        file_put_contents($devLocalEnvFile, "PRIORITY_VAR=dev_local\n");
+
+        EnvLoader::load($baseEnvFile, 'dev', true);
+
+        // The last loaded file should win (dev_local)
+        $this->assertEquals('dev_local', EnvLoader::get('PRIORITY_VAR'));
+
+        // Clean up
+        unlink($baseEnvFile);
+        unlink($devEnvFile);
+        unlink($devLocalEnvFile);
     }
 }
