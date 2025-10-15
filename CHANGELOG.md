@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-01-XX
+
+### Added
+- Environment-specific file support (.env.dev, .env.prod, .env.staging, etc.)
+- Local override file support (.env.local, .env.dev.local, etc.)
+- Enhanced `load()` method with environment and local override parameters
+- Enhanced `loadAndReturn()` method with environment and local override parameters
+- Proper file loading order with override precedence
+- Comprehensive test suite for new functionality
+- Updated documentation with examples and API reference
+
+### Changed
+- `EnvLoader::load()` method now accepts optional environment and local override parameters
+- `EnvLoader::loadAndReturn()` method now accepts optional environment and local override parameters
+- File loading order: base -> environment -> local -> environment.local
+
+### Features
+- Backward compatible with existing code
+- Professional-grade environment management
+- Local developer override support
+- Environment-specific configuration files
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added
