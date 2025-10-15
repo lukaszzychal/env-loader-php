@@ -29,7 +29,7 @@ class EnvLoader
         foreach ($filesToLoad as $file) {
             if (file_exists($file)) {
                 // Allow overrides between files, but not from original environment
-                $loaded = self::loadFromFile($file, true) || $loaded;
+                $loaded = self::loadFromFile($file, true, $originalEnv) || $loaded;
             }
         }
 
@@ -80,9 +80,10 @@ class EnvLoader
      *
      * @param string $filePath Path to the .env file
      * @param bool $allowOverrides Whether to allow overriding existing variables
+     * @param array $originalEnv Original environment variables before loading
      * @return bool True if file was loaded successfully, false otherwise
      */
-    private static function loadFromFile(string $filePath, bool $allowOverrides = false): bool
+    private static function loadFromFile(string $filePath, bool $allowOverrides = false, array $originalEnv = []): bool
     {
         if (!file_exists($filePath)) {
             return false;
@@ -117,9 +118,18 @@ class EnvLoader
                     }
 
                     // Set environment variable based on override policy
-                    if ($allowOverrides || (!array_key_exists($name, $_ENV) && getenv($name) === false)) {
-                        $_ENV[$name] = $value;
-                        putenv("$name=$value");
+                    if ($allowOverrides) {
+                        // Allow overrides between files, but not from original environment
+                        if (!array_key_exists($name, $originalEnv)) {
+                            $_ENV[$name] = $value;
+                            putenv("$name=$value");
+                        }
+                    } else {
+                        // Don't override any existing variables
+                        if (!array_key_exists($name, $_ENV) && getenv($name) === false) {
+                            $_ENV[$name] = $value;
+                            putenv("$name=$value");
+                        }
                     }
                 }
             }
