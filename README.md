@@ -21,6 +21,7 @@ A simple and lightweight .env file loader utility for PHP. This package provides
 - ✅ PHP 8.1+ support
 - ✅ Full test coverage
 - ✅ Static analysis compliant
+- ✅ Automated dependency updates with Dependabot
 
 ## Installation
 
@@ -191,6 +192,18 @@ composer quality
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Dependency Management
+
+This project uses [Dependabot](https://dependabot.com/) to automatically:
+
+- 🔄 **Monitor dependencies** for security vulnerabilities
+- 📦 **Update Composer packages** weekly
+- ⚙️ **Update GitHub Actions** weekly
+- 🛡️ **Create security PRs** for critical vulnerabilities
+- 📋 **Group minor/patch updates** to reduce PR noise
+
+Dependabot will create pull requests for dependency updates. Review and merge them to keep your dependencies secure and up-to-date.
 
 ## Contributing
 
