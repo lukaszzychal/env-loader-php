@@ -50,7 +50,7 @@ jobs:
       if: matrix.php-versions == '8.1'
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       if: matrix.php-versions == '8.1'
       with:
         file: ./coverage.xml
