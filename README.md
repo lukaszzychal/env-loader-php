@@ -310,6 +310,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Community & Support
+
+- Join the conversation on [GitHub Discussions](https://github.com/lukaszzychal/env-loader-php/discussions) to ask questions, share ideas, or get help from the community.
+
 ## Release Management
 
 This project uses automated releases via GitHub Actions. When you push a Git tag, the following happens automatically:
