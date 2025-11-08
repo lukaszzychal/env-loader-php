@@ -313,6 +313,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Community & Support
 
 - Join the conversation on [GitHub Discussions](https://github.com/lukaszzychal/env-loader-php/discussions) to ask questions, share ideas, or get help from the community.
+- Report bugs or request features via [GitHub Issues](https://github.com/lukaszzychal/env-loader-php/issues).
 
 ## Release Management
 

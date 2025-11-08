@@ -41,6 +41,7 @@ class EnvLoader
     public static function load(string $filePath, ?string $environment = null, bool $loadLocalOverrides = true): bool
     {
         $filesToLoad = self::buildFileList($filePath, $environment, $loadLocalOverrides);
+        /** @var array<string, string> $originalEnvironment */
         $originalEnvironment = $_ENV;
 
         return self::loadFilesIntoEnvironment($filesToLoad, $originalEnvironment);
@@ -52,7 +53,7 @@ class EnvLoader
      * @param string $filePath Path to the base .env file
      * @param string|null $environment Environment name (e.g., 'dev', 'prod', 'staging')
      * @param bool $loadLocalOverrides Whether to load .local override files
-     * @return array Array of loaded environment variables
+     * @return array<string, string> Array of loaded environment variables
      */
     public static function loadAndReturn(
         string $filePath,
@@ -60,6 +61,7 @@ class EnvLoader
         bool $loadLocalOverrides = true
     ): array {
         $filesToLoad = self::buildFileList($filePath, $environment, $loadLocalOverrides);
+        /** @var array<string, string> $loadedVariables */
         $loadedVariables = [];
 
         foreach ($filesToLoad as $file) {
@@ -101,7 +103,7 @@ class EnvLoader
      * @param string $filePath Base .env file path
      * @param string|null $environment Environment name
      * @param bool $loadLocalOverrides Whether to load .local override files
-     * @return array Array of file paths in load order
+     * @return list<string> Array of file paths in load order
      */
     private static function buildFileList(string $filePath, ?string $environment, bool $loadLocalOverrides): array
     {
@@ -157,8 +159,8 @@ class EnvLoader
     /**
      * Load multiple files into the environment.
      *
-     * @param array $files Array of file paths to load
-     * @param array $originalEnvironment Original environment variables
+     * @param list<string> $files Array of file paths to load
+     * @param array<string, string> $originalEnvironment Original environment variables
      * @return bool True if any file was loaded successfully
      */
     private static function loadFilesIntoEnvironment(array $files, array $originalEnvironment): bool
@@ -179,7 +181,7 @@ class EnvLoader
      * Load a single file into the environment.
      *
      * @param string $filePath Path to the .env file
-     * @param array $originalEnvironment Original environment variables
+     * @param array<string, string> $originalEnvironment Original environment variables
      * @return bool True if file was loaded successfully
      */
     private static function loadFileIntoEnvironment(string $filePath, array $originalEnvironment): bool
@@ -211,10 +213,11 @@ class EnvLoader
      * Parse a single file and return variables as an array.
      *
      * @param string $filePath Path to the .env file
-     * @return array Array of parsed variables
+     * @return array<string, string> Array of parsed variables
      */
     private static function parseFileIntoArray(string $filePath): array
     {
+        /** @var array<string, string> $variables */
         $variables = [];
 
         if (!file_exists($filePath)) {
@@ -240,7 +243,7 @@ class EnvLoader
      * Read file lines with proper error handling.
      *
      * @param string $filePath Path to the file
-     * @return array|false Array of lines or false on error
+     * @return array<int, string>|false Array of lines or false on error
      */
     private static function readFileLines(string $filePath)
     {
@@ -251,7 +254,7 @@ class EnvLoader
      * Parse a single line and extract key-value pair.
      *
      * @param string $line Line to parse
-     * @return array|null Array with 'key' and 'value' or null if invalid
+     * @return array{key: string, value: string}|null Array with 'key' and 'value' or null if invalid
      */
     private static function parseLine(string $line): ?array
     {
@@ -296,7 +299,7 @@ class EnvLoader
      * Extract key-value pair from line.
      *
      * @param string $line Line containing key=value
-     * @return array|null Array with 'key' and 'value' or null if invalid
+     * @return array{key: string, value: string}|null Array with 'key' and 'value' or null if invalid
      */
     private static function extractKeyValuePair(string $line): ?array
     {
@@ -339,7 +342,7 @@ class EnvLoader
      *
      * @param string $key Variable key
      * @param string $value Variable value
-     * @param array $originalEnvironment Original environment variables
+     * @param array<string, string> $originalEnvironment Original environment variables
      */
     private static function setEnvironmentVariableWithOverridePolicy(
         string $key,

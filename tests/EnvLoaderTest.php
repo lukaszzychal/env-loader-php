@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 class EnvLoaderTest extends TestCase
 {
     private string $testEnvFile;
+    /** @var array<string, string> */
     private array $originalEnv;
 
     protected function setUp(): void
